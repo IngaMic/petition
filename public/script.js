@@ -9,7 +9,9 @@ var signing = false;
 //event listeners here:
 canvas.addEventListener("mousedown", (e) => {
     x = e.offsetX;
+    console.log("x = e.offsetX", x = e.offsetX);
     y = e.offsetY;
+    console.log("y = e.offsetY", y = e.offsetY);
     signing = true;
 });
 

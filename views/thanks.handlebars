@@ -1,8 +1,20 @@
 <div class="thanks">
-    <img class="thanks-pic" src="/public/pup.jpg" alt="">
 
-    <a href=""> Here is a list of people who joined us! </a>
+
+    {{!-- if I insert a form, a must:
+    <input type="hidden" name="_csrf" value="{{csrfToken}}"> --}}
+    <img class="thanks-pic" src="/pup.jpg" alt="pup">
+    </br>
+    <a href="" name="look"> Here is a numbers of people who joined us! </a>
+    <p>NuMBeR</p>
+    <button name="numUsers" type="submit">Take a look</button>
+
+
     {{!-- <p>{{num_subscribers}}</p> --}}
 </div>
+
+{{!-- <img src="URLthatWeGetFromCanvas" alt="" srcset="">
+We get a unique id in a table, so id can be stored in a cookie and 
+ --}}
 
 <a href="/" class="go-back">Back to Homepage</a>

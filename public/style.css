@@ -5,3 +5,8 @@
 #canvas {
     border: 2px solid black;
 }
+.thanks-pic {
+ height: 200px;
+ width: auto;
+ border: 3px solid goldenrod;
+}

@@ -1,10 +1,11 @@
 const spicedPg = require("spiced-pg");
-var db = spicedPg('postgres:postgres:postgres@localhost:5432/geography');
+var db = spicedPg('postgres:postgres:postgres@localhost:5432/users');
 
-module.exports.getCities = () => {
-    return db.query(`SELECT * FROM cities`);
+module.exports.getInfo = () => {
+    return db.query(`SELECT * FROM users`);
 };
-module.exports.addCity = (city, pop, country) => {
-    return db.query(`INSERT INTO cities (sity, population, country)
-    VALUES ($1, $2, $3) RETURNING * `, [city, pop, country]);
+module.exports.addInfo = (first, last, signature) => {
+    return db.query(`
+    INSERT INTO users (first, last, signature)
+    VALUES ($1, $2, $3) RETURNING * `, [first, last, signature]);
 };

@@ -1,20 +1,21 @@
 <div class="thanks">
-
-
-    {{!-- if I insert a form, a must:
-    <input type="hidden" name="_csrf" value="{{csrfToken}}"> --}}
     <img class="thanks-pic" src="/pup.jpg" alt="pup">
-    </br>
-    <a href="" name="look"> Here is a numbers of people who joined us! </a>
-    <p>NuMBeR</p>
-    <button name="numUsers" type="submit">Take a look</button>
-
-
-    {{!-- <p>{{num_subscribers}}</p> --}}
-</div>
-
-{{!-- <img src="URLthatWeGetFromCanvas" alt="" srcset="">
+    {{!-- <img src="URLthatWeGetFromCanvas" alt="" srcset="">
 We get a unique id in a table, so id can be stored in a cookie and 
  --}}
+    <img src="{{usersSignature}}" alt="your signature">
+    </br>
+    <a href="signers" name="look"> Here is a number of people who joined us! 🐛 </a>
+    <p>{{amount}}</p>
+    {{!-- //we can wrap an a tag in a button here to show the list--}}
+    <button><a href="signers">Take a look</a></button>
 
-<a href="/" class="go-back">Back to Homepage</a>
+
+    {{!-- <p>{{list}}</p> --}}
+</div>
+
+
+
+{{!--
+Should make a button to get back to sign again
+ <a href="/" class="go-back">Back to Homepage</a> --}}

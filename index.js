@@ -1,25 +1,33 @@
 const express = require("express");
+const app = express();
+//var path = require('path');
 const db = require("./db.js");
 const handlebars = require("express-handlebars");
-const bodyParser = require("body-parser");
+//const bodyParser = require("body-parser");
 //const cookieParser = require("cookie-parser");
 const cookieSession = require('cookie-session');
 const csurf = require('csurf');
-const app = express();
+
 const hbSet = handlebars.create({
-    // helpers: {
-    //     //
-    // },
+    helpers: {
+        message() {
+            `Thank you for joining us ${first}!
+            We hope you had fun signing!   `
+        }
+    },
 });
 //////////////////// don't change under: ///////////////////
-app.engine("handlebars", hbSet.engine);
+app.engine("handlebars", handlebars());
+
 app.set("view engine", "handlebars");
+app.set('views', __dirname + '/views');
 app.use(cookieSession({
     secret: `I'm always angry.`,
     maxAge: 1000 * 60 * 60 * 24 * 14
 }));
-app.use(bodyParser.urlencoded({ extended: false }));
 app.use(express.urlencoded({ extended: false }));
+//app.use(bodyParser.urlencoded({ extended: false }));
+
 app.use(csurf());
 ////////////// against clickjactking & csrf: //////////////
 app.use(function (req, res, next) {
@@ -28,95 +36,88 @@ app.use(function (req, res, next) {
     next();
 });
 /////////////////////////////////////////////////////////
+
+app.use(express.static(__dirname + "/public"));
+app.get("/", (req, res) => {
+    //console.log("Slash route, req.session", req.session);
+    res.redirect("/welcome");
+});
 app.use((req, res, next) => {
     if (!req.session.allow && req.url !== "/welcome") {
-        //res.cookieSession("url", req.url);
         res.redirect("/welcome");
     } else {
         next();
     }
 });
-app.get("/", (req, res) => {
-    req.session.cumin = "Hello, cumin";
-    console.log("Slash route, req.session", req.session);
-    res.redirect("/welcome");
-});
-app.use(express.static("./public"));
+
 app.get("/welcome", (req, res) => {
-    res.render("welcome", {
-        layout: "main",
-    }); //continue with canvas in public/script.js
-    // must be done with express - handlebars:
-    // res.send(`
-    // <h2>Hello! Would you like to sign our petition?</h2>
-    //     <form method='POST' style="display: flex; flex-direction: column; justify-content: space-between; width: 40%; height: 50%;">
-    //         <input type='text' name='firstname' placeholder='First Name' autocomplete='off'>
-    //         <input type='text' name='lastname' placeholder='Last Name' autocomplete='off'>
-    //         <div>
-    //             <input type="checkbox" name="accept">
-    //         </div>
-    //         <button name="submit"> Submit </submit>
-    //     </form>
-    // `);
-});
-app.post("/welcome", (req, res) => {
-    const { first, last, signature, accept } = req.body;
-    if (accept === "on") {
-        req.session.allow = true;
-        //res.cookieSession("allow", true);
-        //have to redirect to thanks
+    if (req.session.allow) {
         res.redirect("/thanks");
-        //     res.send(`
-        // <h2>People who joined the petition :</h2>
-        //  <ul>
-        //  <li>smth</li>
-        //  </ul>
-        //  <button name="look"> Take a look! </submit>
+    } else {
+        res.render("welcome", {
+            layout: "main",
+        });
+    }
+});
+var empty = "";
+var signatureId;
+var first;
+var last;
+var signature;
+app.post("/welcome", (req, res) => {
+    //const { first, last, signature } = req.body; //bug here
+    first = req.body["first"];
+    last = req.body["last"];
+    signature = req.body["signature"];
+    //none of these can be empty:
+    if (first === empty || last === empty || signature === empty) {
+        console.log("Not logging the data");
+        //a helper or err key to "/welcome" with warning
+        res.render("welcome", {
+            layout: "main",
+            err: "Please try again",
+        });
+        // res.send(`
+        // <h1> Uh oh, please try again! ✋🏻</h1>
         // `);
 
     } else {
-        res.send(`<h1> Content Unavailable ✋🏻</h1>`);
-        //res.redirect(req.cookies.url);
-    }
+        //console.log("I'm here, first last", first, last);
+        db.addInfo(first, last, signature).then((result) => {
+            signatureId = result.rows[0].id;
+            req.session.signedId = signatureId;
+            req.session.allow = true;
+            res.redirect("/thanks");
+        }).catch((err) => {
+            console.log("trouble with inserting data", err)
+        });
+    };
 });
 
 app.get("/thanks", (req, res) => {
-
     //console.log("get request to /thanks route happened");
-    if (req.session.allow = true) {
-        res.render("thanks", {
-            layout: "main",
+    db.getSignature(req.session.signedId).then((result) => {
+        db.getInfo().then((info) => {
+            //the amount will be the number of table-rows
+            let amount = info.rows.length;
+            //console.log("amount of users", amount);
+            let usersSignature = result.rows[0].signature;
+            res.render("thanks", {
+                usersSignature,
+                amount: amount,
+            });
         });
-        console.log("I'm in a /thanks get at a moment and the cookie is set")
-        // res.cookieSession("allow", true);
-        // res.redirect("./signers");
-
-        //req.session.look = true
-        if (look = "on") {
-            res.redirect("/signers");
-        }
-    } else {
-        res.send(`
-        <h1> Content Unavailable ✋🏻</h1>`);
-        res.redirect("/");
-    }
+    }).catch((err) => { console.log("err in getSignature", err) });
 });
-//app.post("/thanks",(req, res)=> {});//if interested in names will click the button
+
 app.get("/signers", (req, res) => {
-    if (req.session.allow = true && req.session.look) {
+    db.getList().then((info) => {
+        let list = info.rows;
+        //console.log("my list here:", list);
         res.render("signers", {
-            layout: "main",
+            list,
         });
-        //     res.send(`
-        // <h2>People who joined the petition :</h2>
-        //  <ul>
-        //  <li>names names names</li>
-        //  </ul>
-        // `);
-    } else {
-        res.send(`<h1> Content Unavailable ✋🏻</h1>`);
-        res.redirect("/");
-    }
+    }).catch((err) => { console.log("err in getting list", err) });
 });
 
 

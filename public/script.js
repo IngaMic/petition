@@ -1,42 +1,50 @@
 //figure out why error for "<"
 const canvas = document.getElementById("canvas");
+//const hidden = document.getElementById("hidden");
 const ctx = canvas.getContext("2d");
 
-var x = 0;
-var y = 0;
+var position = {
+    x: 0,
+    y: 0
+};
+
 var signing = false;
-
-//event listeners here:
 canvas.addEventListener("mousedown", (e) => {
-    x = e.offsetX;
-    console.log("x = e.offsetX", x = e.offsetX);
-    y = e.offsetY;
-    console.log("y = e.offsetY", y = e.offsetY);
     signing = true;
-});
-
-canvas.addEventListener("mousemove", (e) => {
-    if (signing === true) {
-        sign(ctx, x, y, e.offsetX, e.offsetY);
-        x = e.offsetX;
-        y = e.offsetY;
-    }
+    setNewPosition(e);
 });
 canvas.addEventListener("mouseup", (e) => {
-    if (signing === true) {
-        sign(ctx, x, y, e.offsetX, e.offsetY);
-        x = 0;
-        y = 0;
-        signing = false;
+    signing = false;
+    let dataUrl = canvas.toDataURL();
+    hidden.value = dataUrl;
+    setNewPosition(e);
+});
+canvas.addEventListener("mousemove", (e) => {
+    if (signing) {
+        ctx.strokeStyle = "black";
+        ctx.lineJoin = "round";
+        ctx.lineCap = "round";
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.moveTo(position.x, position.y);
+        setNewPosition(e);
+        console.log(position.x, position.y);
+        ctx.lineTo(position.x, position.y);
+        ctx.closePath();
+        ctx.stroke();
+    } else {
+        return;
     }
 });
-
-function sign(ctx, a, b, c, d) {
-    ctx.strokeStyle = "black";
-    ctx.lineWidth = 3;
-    ctx.beginPath();
-    ctx.moveTo(a, b);
-    ctx.lineTo(c, d);
-    ctx.stroke();
-    ctx.closePath();
-};
+canvas.addEventListener("mouseout", () => {
+    signing = false;
+});
+//need to adjust the hight!!
+window.addEventListener("resize", (e) => {
+    e.clientX - canvas.offsetLeft;
+    e.clientY - canvas.offsetTop;
+});
+function setNewPosition(e) {
+    position.x = e.clientX;
+    position.y = e.clientY;
+}

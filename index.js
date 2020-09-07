@@ -8,6 +8,7 @@ const handlebars = require("express-handlebars");
 //const cookieParser = require("cookie-parser");
 const cookieSession = require('cookie-session');
 const csurf = require('csurf');
+const { hash } = require("bcryptjs");
 
 const hbSet = handlebars.create({
     helpers: {
@@ -58,10 +59,8 @@ var password;
 var signature;
 
 app.get("/registration", (req, res) => {
-    if (req.session.registered || req.session.loged) { //need to work on more scenarios here
+    if (req.session.registered) { //need to work on more scenarios here
         if (req.session.allow) {
-            res.redirect("/thanks");
-        } else {
             res.redirect("/welcome");
         }
     } else {
@@ -75,30 +74,35 @@ app.post("/registration", (req, res) => {
     first = req.body["first"];
     last = req.body["last"];
     email = req.body["email"];
-    password = req.body["password"];
-    if (first === empty || last === empty || email === empty || password === empty) {
-        console.log("Not logging the registration data / empty");
-        res.render("registration", {
-            layout: "main",
-            err: "Please try again",
-        });
-    } else {
-        // hash about here
-        console.log("I'm here, first last email", first, last, email);
-        db.registerInfo(first, last, email, password).then(() => {  //result here
-            //dataId = result.rows[0].id;
-            // req.session.registeredId = dataId;
-            //skipping steps to see if the sceleton works
-            req.session.registered = true;
-            if (req.session.allow && req.session.registered) {
-                res.redirect("/thanks");
-            } else if (req.session.registered) {
-                res.redirect("/welcome");
-            }
-        }).catch((err) => {
-            console.log("trouble with inserting registration data", err); //getting error: relation "usersdata" does not exist
-        });
-    };
+    password = req.body["password"]; //throws illegal argument / fixed
+    //console.log("password", password);
+    bc.hash(password).then((result) => {
+        req.body.password = result;
+        password = req.body.password
+        //console.log("password", password);
+        if (first === empty || last === empty || email === empty || password === empty) {
+            console.log("Not logging the registration data / empty");
+            res.render("registration", {
+                layout: "main",
+                err: "Please try again",
+            });
+        } else {
+            console.log("I'm here, first last email", first, last, email, password);
+            db.registerInfo(first, last, email, password).then((result) => {
+                let dataId = result.rows[0].id;
+                req.session.registeredId = dataId; //registeredId
+                req.session.loged = true;
+                req.session.registered = true;
+                if (req.session.allow && req.session.registered) {
+                    res.redirect("/thanks");
+                } else if (req.session.registered) {
+                    res.redirect("/welcome");
+                }
+            }).catch((err) => {
+                console.log("trouble with inserting registration data", err); //getting error: relation "usersdata" does not exist
+            });
+        };
+    }).catch((err) => console.log("hash() didn't work", err));
 });
 app.get("/login", (req, res) => {
     if (req.session.allow && req.session.registered) {
@@ -115,15 +119,32 @@ app.get("/login", (req, res) => {
 
 app.post("/login", (req, res) => {
     //console.log("post request to /login route happened");
-    db.getLogin(req.session.registeredId).then((result) => {
+    let logPassword = req.body.password;
+    let logemail = req.body.email;
+    console.log("email : ", logemail);
+    // see if the email match;
+    db.getLogin(logemail).then((result) => {
         console.log("Next step to continue with login / result : ", result);
-        // see if the email match;
-        // bc.compare().then((info) => {
-        //     let usersId = //extract here
-        //     //then two scenarios : welcome or thanks
-        //     res.render("thanks", {
-        //     });
-        // });
+        // basicaly there will be result or no result, if()
+        if (result) {
+            let pass = result.rows[0].password;
+            bc.compare(logPassword, pass).then((info) => {
+                //console.log("info from compare", info); //returns true
+                if (info) {
+                    //let usersId = info.result[0].id //extract here
+                    //then two scenarios : welcome or thanks :
+                    res.render("welcome", {
+                    });
+                };
+                //else here
+            }).catch((err) => console.log("err in compare", err));
+        } else { // no result
+            res.render("login", {
+                layout: "main",
+                err: "Please try again",
+            });
+        };
+
     }).catch((err) => { console.log("err in getLogin", err) });
 });
 

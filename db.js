@@ -25,11 +25,12 @@ module.exports.getList = () => {
 module.exports.registerInfo = (first, last, email, password) => {
     return db.query(`
     INSERT INTO usersdata (first, last, email, password)
-    VALUES ($1, $2, $3, $4) RETURNING id `, [first, last, email, password]);
+    VALUES ($1, $2, $3, $4) RETURNING id `, [first, last, email, password]
+    );
 };
-module.exports.getLogin = (loginId) => {
+module.exports.getLogin = (logemail) => {
     return db.query(`
-        SELECT password FROM usersdata WHERE id = ($1)`, [loginId]
+        SELECT * FROM usersdata WHERE email = ($1)`, [logemail]
     );
 };
 module.exports.getRegistrationInfo = () => {

@@ -1,4 +1,4 @@
-DROP TABLE IF EXISTS usersdata;
+-- DROP TABLE IF EXISTS usersdata;
 
 CREATE TABLE usersdata (
 id SERIAL PRIMARY KEY,

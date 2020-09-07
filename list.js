@@ -1,5 +1,5 @@
-// const fs = require("fs");
-
+//const fs = require("fs");
+//////////////////////NOTES////////////////////
 // module.exports.signersList = function () {
 //     // a list of all users firstnames and lastnames:
 //     // const users = will be taken from database

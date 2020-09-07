@@ -20,3 +20,18 @@ module.exports.getList = () => {
         SELECT first, last FROM users`
     );
 };
+
+
+module.exports.registerInfo = (first, last, email, password) => {
+    return db.query(`
+    INSERT INTO usersdata (first, last, email, password)
+    VALUES ($1, $2, $3, $4) RETURNING id `, [first, last, email, password]);
+};
+module.exports.getLogin = (loginId) => {
+    return db.query(`
+        SELECT password FROM usersdata WHERE id = ($1)`, [loginId]
+    );
+};
+module.exports.getRegistrationInfo = () => {
+    return db.query(`SELECT * FROM usersdata`);
+};

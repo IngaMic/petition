@@ -2,6 +2,7 @@ const express = require("express");
 const app = express();
 //var path = require('path');
 const db = require("./db.js");
+const bc = require("./bc.js");
 const handlebars = require("express-handlebars");
 //const bodyParser = require("body-parser");
 //const cookieParser = require("cookie-parser");
@@ -39,15 +40,91 @@ app.use(function (req, res, next) {
 
 app.use(express.static(__dirname + "/public"));
 app.get("/", (req, res) => {
-    //console.log("Slash route, req.session", req.session);
-    res.redirect("/welcome");
+    res.redirect("/registration");
 });
 app.use((req, res, next) => {
-    if (!req.session.allow && req.url !== "/welcome") {
-        res.redirect("/welcome");
+    if (!req.session.allow && req.url !== "/registration" && req.url !== "/login") {
+        res.redirect("/registration");
     } else {
         next();
     }
+});
+var empty = "";
+var signatureId;
+var first;
+var last;
+var email;
+var password;
+var signature;
+
+app.get("/registration", (req, res) => {
+    if (req.session.registered || req.session.loged) { //need to work on more scenarios here
+        if (req.session.allow) {
+            res.redirect("/thanks");
+        } else {
+            res.redirect("/welcome");
+        }
+    } else {
+        res.render("registration", {
+            layout: "main",
+        });
+    }
+});
+
+app.post("/registration", (req, res) => {
+    first = req.body["first"];
+    last = req.body["last"];
+    email = req.body["email"];
+    password = req.body["password"];
+    if (first === empty || last === empty || email === empty || password === empty) {
+        console.log("Not logging the registration data / empty");
+        res.render("registration", {
+            layout: "main",
+            err: "Please try again",
+        });
+    } else {
+        // hash about here
+        console.log("I'm here, first last email", first, last, email);
+        db.registerInfo(first, last, email, password).then(() => {  //result here
+            //dataId = result.rows[0].id;
+            // req.session.registeredId = dataId;
+            //skipping steps to see if the sceleton works
+            req.session.registered = true;
+            if (req.session.allow && req.session.registered) {
+                res.redirect("/thanks");
+            } else if (req.session.registered) {
+                res.redirect("/welcome");
+            }
+        }).catch((err) => {
+            console.log("trouble with inserting registration data", err); //getting error: relation "usersdata" does not exist
+        });
+    };
+});
+app.get("/login", (req, res) => {
+    if (req.session.allow && req.session.registered) {
+        res.redirect("/thanks");
+    } else if (req.session.loged || req.session.registered) {
+        res.redirect("/welcome");
+    } else {
+        res.render("login", {
+            layout: "main",
+        }
+        );
+    }
+});
+
+app.post("/login", (req, res) => {
+    //console.log("post request to /login route happened");
+    db.getLogin(req.session.registeredId).then((result) => {
+        console.log("Next step to continue with login / result : ", result);
+        // see if the email match;
+        // bc.compare().then((info) => {
+        //     let usersId = //extract here
+        //     //then two scenarios : welcome or thanks
+        //     res.render("thanks", {
+        //     });
+        // });
+    }).catch((err) => { console.log("err in getLogin", err) });
 });
 
 app.get("/welcome", (req, res) => {
@@ -59,11 +136,7 @@ app.get("/welcome", (req, res) => {
         });
     }
 });
-var empty = "";
-var signatureId;
-var first;
-var last;
-var signature;
+
 app.post("/welcome", (req, res) => {
     //const { first, last, signature } = req.body; //bug here
     first = req.body["first"];
@@ -80,7 +153,6 @@ app.post("/welcome", (req, res) => {
         // res.send(`
         // <h1> Uh oh, please try again! ✋🏻</h1>
         // `);
-
     } else {
         //console.log("I'm here, first last", first, last);
         db.addInfo(first, last, signature).then((result) => {
@@ -119,8 +191,6 @@ app.get("/signers", (req, res) => {
         });
     }).catch((err) => { console.log("err in getting list", err) });
 });
-
-
 
 
 app.listen(8080, () => console.log("petition server is running..."));

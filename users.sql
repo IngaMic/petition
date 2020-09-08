@@ -1,7 +1,9 @@
--- DROP TABLE IF EXISTS users;
+DROP TABLE IF EXISTS users;
+
 CREATE TABLE users (
-     id SERIAL PRIMARY KEY,
-     first VARCHAR NOT NULL CHECK (first != ''),
-     last VARCHAR NOT NULL CHECK (last != ''),
-     signature VARCHAR NOT NULL CHECK (signature != '')
+id SERIAL PRIMARY KEY,
+first VARCHAR NOT NULL,
+last VARCHAR NOT NULL,
+email VARCHAR NOT NULL UNIQUE,
+password VARCHAR NOT NULL
 );

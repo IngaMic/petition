@@ -1,6 +1,21 @@
 <h2>List of people who joined us:</h2>
+{{!-- find a way to do it more readable--}}
 <ul>
     {{#list}}
-    <li>{{first}} {{last}}</li>
+    <li>
+        {{#if url}}
+        <a href={{url}}>
+            {{first}}{{last}}
+        </a>
+        {{else}}
+        {{first}} {{last}}
+        {{/if}}
+        {{#if age}}
+        {{age}}
+        {{/if}}
+        {{#if city}}
+        <a href="/signers/{{city}}">{{city}}</a>
+        {{//if}}
+    </li>
     {{/list}}
 </ul>

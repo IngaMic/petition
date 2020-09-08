@@ -44,7 +44,7 @@ app.get("/", (req, res) => {
     res.redirect("/registration");
 });
 app.use((req, res, next) => {
-    if (!req.session.allow && req.url !== "/registration" && req.url !== "/login") {
+    if (!req.session.allow && req.url !== "/registration" && req.url !== "/login" && req.url !== "/profile" && req.url !== "/thanks") {
         res.redirect("/registration");
     } else {
         next();
@@ -57,9 +57,12 @@ var last;
 var email;
 var password;
 var signature;
+var age;
+var city;
+var url;
 
 app.get("/registration", (req, res) => {
-    if (req.session.registered) { //need to work on more scenarios here
+    if (req.session.registered) {
         if (req.session.allow) {
             res.redirect("/welcome");
         }
@@ -74,7 +77,7 @@ app.post("/registration", (req, res) => {
     first = req.body["first"];
     last = req.body["last"];
     email = req.body["email"];
-    password = req.body["password"]; //throws illegal argument / fixed
+    password = req.body["password"];
     //console.log("password", password);
     bc.hash(password).then((result) => {
         req.body.password = result;
@@ -89,23 +92,25 @@ app.post("/registration", (req, res) => {
         } else {
             console.log("I'm here, first last email", first, last, email, password);
             db.registerInfo(first, last, email, password).then((result) => {
-                let dataId = result.rows[0].id;
-                req.session.registeredId = dataId; //registeredId
+                var userid = result.rows[0].id;
+                console.log("userid", userid);
+                req.session.registeredId = userid; //registeredId
                 req.session.loged = true;
                 req.session.registered = true;
-                if (req.session.allow && req.session.registered) {
+                if (req.session.allow) {
                     res.redirect("/thanks");
-                } else if (req.session.registered) {
-                    res.redirect("/welcome");
+                } else {
+                    res.redirect("/profile");
                 }
             }).catch((err) => {
+
                 console.log("trouble with inserting registration data", err); //getting error: relation "usersdata" does not exist
             });
         };
     }).catch((err) => console.log("hash() didn't work", err));
 });
 app.get("/login", (req, res) => {
-    if (req.session.allow && req.session.registered) {
+    if (req.session.allow) {
         res.redirect("/thanks");
     } else if (req.session.loged || req.session.registered) {
         res.redirect("/welcome");
@@ -116,27 +121,30 @@ app.get("/login", (req, res) => {
         );
     }
 });
-
 app.post("/login", (req, res) => {
-    //console.log("post request to /login route happened");
     let logPassword = req.body.password;
     let logemail = req.body.email;
-    console.log("email : ", logemail);
-    // see if the email match;
     db.getLogin(logemail).then((result) => {
-        console.log("Next step to continue with login / result : ", result);
-        // basicaly there will be result or no result, if()
         if (result) {
+            //console.log("result", result);
+            let usersId = result.rows[0].id
+            req.session.registeredId = usersId;
             let pass = result.rows[0].password;
             bc.compare(logPassword, pass).then((info) => {
-                //console.log("info from compare", info); //returns true
+                console.log("info from compare", info);
                 if (info) {
-                    //let usersId = info.result[0].id //extract here
+                    //extract here
                     //then two scenarios : welcome or thanks :
-                    res.render("welcome", {
+                    /////////////////////////////////////////////////////////
+                    ///////////////////////////////////////////////////////////
+                    req.session.loged = true;
+                    res.redirect("/profile");
+                } else {
+                    res.render("login", {
+                        layout: "main",
+                        err: "Please try again",
                     });
-                };
-                //else here
+                }
             }).catch((err) => console.log("err in compare", err));
         } else { // no result
             res.render("login", {
@@ -144,8 +152,7 @@ app.post("/login", (req, res) => {
                 err: "Please try again",
             });
         };
-
-    }).catch((err) => { console.log("err in getLogin", err) });
+    }).catch((err) => { console.log("err in getLogin", err) }); // sort err in getLogin TypeError: Cannot read property 'id' of undefined
 });
 
 app.get("/welcome", (req, res) => {
@@ -157,23 +164,36 @@ app.get("/welcome", (req, res) => {
         });
     }
 });
-
+app.get("/profile", (req, res) => {
+    if (req.session.registeredId) {
+        res.render("profile", {
+            layout: "main",
+        });
+    }
+});
+app.post("/profile", (req, res) => {
+    age = req.body["age"];
+    city = req.body["city"];
+    url = req.body["url"];
+    user_id = req.session.registeredId;
+    //console.log("user_id", user_id);
+    db.addProfile(age, city, url, user_id).then(() => {
+        //return console.log(result);
+        res.redirect("/welcome");
+    }).catch((err) => {
+        console.log("trouble with inserting profile data", err);
+    });
+});
 app.post("/welcome", (req, res) => {
-    //const { first, last, signature } = req.body; //bug here
     first = req.body["first"];
     last = req.body["last"];
     signature = req.body["signature"];
-    //none of these can be empty:
     if (first === empty || last === empty || signature === empty) {
         console.log("Not logging the data");
-        //a helper or err key to "/welcome" with warning
         res.render("welcome", {
             layout: "main",
             err: "Please try again",
         });
-        // res.send(`
-        // <h1> Uh oh, please try again! ✋🏻</h1>
-        // `);
     } else {
         //console.log("I'm here, first last", first, last);
         db.addInfo(first, last, signature).then((result) => {
@@ -188,7 +208,6 @@ app.post("/welcome", (req, res) => {
 });
 
 app.get("/thanks", (req, res) => {
-    //console.log("get request to /thanks route happened");
     db.getSignature(req.session.signedId).then((result) => {
         db.getInfo().then((info) => {
             //the amount will be the number of table-rows
@@ -211,6 +230,18 @@ app.get("/signers", (req, res) => {
             list,
         });
     }).catch((err) => { console.log("err in getting list", err) });
+});
+app.get("/signers/:city", (req, res) => {
+    //hint hint, need to remember req.params
+    let ct = req.params.city;
+    console.log("req.params.city", req.params.city)
+    db.getCity(ct).then((result) => {
+        let allFromThisCity = result.rows;
+        res.render("signers", {
+            layour: "main",
+            allFromThisCity,
+        });
+    });
 });
 
 

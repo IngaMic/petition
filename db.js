@@ -48,7 +48,7 @@ module.exports.getProfile = () => {
     JOIN profiles
     ON users.id = profiles.user_id
     JOIN signatures
-    ON users.id = signatures.user_id
+    ON users.id = signatures.userid
      `);
 };
 module.exports.getCity = (city) => {
@@ -56,7 +56,7 @@ module.exports.getCity = (city) => {
     JOIN profiles
     ON users.id = profiles.user_id
     JOIN signatures
-    ON users.id = signatures.user_id
+    ON users.id = signatures.userid
     WHERE LOWER(city) = LOWER($1)`, [city]);
 }
 

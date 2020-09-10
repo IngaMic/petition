@@ -5,17 +5,23 @@
     <li>
         {{#if url}}
         <a href={{url}}>
-            {{first}}{{last}}
+            {{first}} {{last}}
         </a>
         {{else}}
         {{first}} {{last}}
         {{/if}}
         {{#if age}}
-        {{age}}
+        ,{{age}}
         {{/if}}
         {{#if city}}
-        <a href="/signers/{{city}}">{{city}}</a>
-        {{//if}}
+        <a href="/signers/:{{city}}">{{city}}</a>
+        {{/if}}
     </li>
     {{/list}}
+</ul>
+{{!-- not sure how render this part : --}}
+<ul>
+    {{#allFromThisCity}}
+    <li>{{first}} {{last}} </li>
+    {{/allFromThisCity}}
 </ul>

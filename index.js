@@ -61,19 +61,16 @@ var age;
 var city;
 var url;
 
-app.get("/registration", (req, res) => {
-    if (req.session.registeredId) {
-        if (req.session.allow) {
-            res.redirect("/welcome");
-        }
-    } else {
-        res.render("registration", {
-            layout: "main",
-        });
+app.get("/registration", (req, res) => { //noLogin
+    if (req.session.allow) {
+        res.redirect("/thanks");
     }
+    res.render("registration", {
+        layout: "main",
+    });
 });
 
-app.post("/registration", (req, res) => {
+app.post("/registration", (req, res) => { //noLogin
     first = req.body["first"];
     last = req.body["last"];
     email = req.body["email"];
@@ -109,19 +106,12 @@ app.post("/registration", (req, res) => {
         };
     }).catch((err) => console.log("hash() didn't work", err));
 });
-app.get("/login", (req, res) => {
-    if (req.session.allow) {
-        res.redirect("/thanks");
-    } else if (req.session.loged || req.session.registered) {
-        res.redirect("/welcome");
-    } else {
-        res.render("login", {
-            layout: "main",
-        }
-        );
-    }
+app.get("/login", (req, res) => { //noLogin
+    res.render("login", {
+        layout: "main",
+    });
 });
-app.post("/login", (req, res) => {
+app.post("/login", (req, res) => { //noLogin
     let logPassword = req.body.password;
     let logemail = req.body.email;
     db.getLogin(logemail).then((result) => {
@@ -181,8 +171,15 @@ app.post("/profile", (req, res) => {
         console.log("trouble with inserting profile data", err);
     });
 });
+// const noLogin = (req, res, next) => {
+//     if(req.session.userId) {
+//         res.redirect("/welcome");
+//     }else {
+//         next();
+//     }
+// };
 app.get("/welcome", (req, res) => {
-    if (res.session.registeredId && req.session.allow) {
+    if (req.session.allow) {
         res.redirect("/thanks");
     } else {
         res.render("welcome", {
@@ -230,10 +227,11 @@ app.get("/thanks", (req, res) => {
 });
 
 app.get("/signers", (req, res) => {
-    db.getList().then((info) => {
+    db.getProfile().then((info) => {
         let list = info.rows;
-        //console.log("my list here:", list);
+        console.log("my list here:", list);
         res.render("signers", {
+            layout: "main",
             list,
         });
     }).catch((err) => { console.log("err in getting list", err) });
@@ -241,12 +239,14 @@ app.get("/signers", (req, res) => {
 app.get("/signers/:city", (req, res) => {
     //hint hint, need to remember req.params
     let city = req.params.city;
-    console.log("req.params.city", req.params.city)
+    //console.log("req.params.city", req.params.city) //logs right
     db.getCity(city).then((result) => {
+        console.log(result);
         let allFromThisCity = result.rows;
+        console.log("allFromThisCity :", allFromThisCity);
         res.render("signers", {
             layour: "main",
-            allFromThisCity: allFromThisCity,
+            allFromThisCity,
         });
     });
 });

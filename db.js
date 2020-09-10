@@ -73,11 +73,11 @@ module.exports.deleteSignature = (userid) => {
         `DELETE FROM signatures WHERE userid = ($1)`, [userid]);
 };
 
-module.exports.updateProfile = (userid) => {
-    // `INSERT INTO profiles (first, last, email, password, age, city, url)
-    // VALUES("", "", "") //need to work out how to get the values
-    // ON CONFLICT(first, last, email, password, age, city, url)
-    // DO UPDATE SET age = "", city = "", url=""`
+module.exports.updateProfile = (first, last, email, password, age, city, url, userid) => {
+    return db.query(`INSERT INTO profiles (first, last, email, password, age, city, url)
+    VALUES($1, $2, $3, $4, $5, $6, $7) RETURNING id
+    ON CONFLICT(first, last, email, password, age, city, url)
+    DO UPDATE SET first, last, email, password, age, city, url` , [first, last, email, password, age, city, url, userid]);
 }
 
 

@@ -278,26 +278,26 @@ app.post("/edit", (req, res) => {
     age = req.body["age"];
     city = req.body["city"];
     url = req.body["url"];
+    //need to be cautious with url again, add http or https
+    if (url !== empty) {
+        if (!url.startsWith("http://") || !url.startsWith("https://")) {
+            url = "https://" + url;
+            console.log("url after if statement :", url);
+        } else {
+            return;
+        }
+    }
     ///////////////////////////UPDATE PROFILE///////////
-    // //need to be cautious with url, add http or https
-    // if (url !== empty) {
-    // if (!url.startsWith("http://") || !url.startsWith("https://")) {
-    //     url = "https://" + url;
-    //     console.log("url after if statement :", url);
-    // } else {
-    //     return;
-    // }
-    //}
-    // //////////////////////////////////////////
-    // user_id = req.session.registeredId;
-    // console.log("user_id post edit page", user_id);
-    // db.editProfile(parameters here).then(() => {
-    //     res.redirect("/welcome");
-    // }).catch((err) => {
-    //     console.log("trouble with inserting profile data", err);
-    // });
-});
+    userid = req.session.registeredId;
+    db.updateProfile(first, last, email, password, age || null, city || null, url || null, userid).then(() => {
+        req.session.profiled = true;////////////////////////////////check if it's ok
+        res.redirect("/welcome");
+    }).catch((err) => {
+        console.log("trouble with inserting profile data while updating POST edit", err);
+    });
+    /////////////////////////////////////////////
 
+});
 app.get("/delete", (req, res) => {
     if (req.session.registeredId) {
         userid = req.session.registeredId;
@@ -307,7 +307,6 @@ app.get("/delete", (req, res) => {
     }
 });
 app.post("/delete", (req, res) => {
-
     userId = req.session.registeredId;
     console.log("registeredId", userId);
     let logPassword = req.body.password;

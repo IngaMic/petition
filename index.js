@@ -43,13 +43,13 @@ app.use(express.static(__dirname + "/public"));
 app.get("/", (req, res) => {
     res.redirect("/registration");
 });
-app.use((req, res, next) => {
-    if (!req.session.allow && req.url !== "/registration" && req.url !== "/login" && req.url !== "/profile" && req.url !== "/thanks") {
-        res.redirect("/registration");
-    } else {
-        next();
-    }
-});
+// app.use((req, res, next) => {
+//     if (!req.session.allow && req.url !== "/registration" && req.url !== "/login" && req.url !== "/profile" && req.url !== "/thanks" && req.url !== "/welcome") {
+//         res.redirect("/registration");
+//     } else {
+//         next();
+//     }
+// });
 var empty = "";
 var signatureId;
 var first;
@@ -62,7 +62,7 @@ var city;
 var url;
 
 app.get("/registration", (req, res) => {
-    if (req.session.registered) {
+    if (req.session.registeredId) {
         if (req.session.allow) {
             res.redirect("/welcome");
         }
@@ -133,8 +133,6 @@ app.post("/login", (req, res) => {
             bc.compare(logPassword, pass).then((info) => {
                 console.log("info from compare", info);
                 if (info) {
-                    //extract here
-                    //then two scenarios : welcome or thanks :
                     /////////////////////////////////////////////////////////
                     ///////////////////////////////////////////////////////////
                     req.session.loged = true;
@@ -154,16 +152,6 @@ app.post("/login", (req, res) => {
         };
     }).catch((err) => { console.log("err in getLogin", err) }); // sort err in getLogin TypeError: Cannot read property 'id' of undefined
 });
-
-app.get("/welcome", (req, res) => {
-    if (req.session.allow) {
-        res.redirect("/thanks");
-    } else {
-        res.render("welcome", {
-            layout: "main",
-        });
-    }
-});
 app.get("/profile", (req, res) => {
     if (req.session.registeredId) {
         res.render("profile", {
@@ -175,28 +163,47 @@ app.post("/profile", (req, res) => {
     age = req.body["age"];
     city = req.body["city"];
     url = req.body["url"];
+    //need to be cautious with url, add http or https
+    if (url !== empty && !url.startsWith("http://") || !url.startsWith("https://")) {
+        url = "https://" + url;
+        console.log("url after if statement :", url);
+    }
     user_id = req.session.registeredId;
-    //console.log("user_id", user_id);
-    db.addProfile(age, city, url, user_id).then(() => {
-        //return console.log(result);
+    console.log("user_id post profile", user_id);
+    db.addProfile(age || null, city || null, url || null, user_id).then(() => {
         res.redirect("/welcome");
+        //console.log(result);
+        /////////////////////////////////////////////////
+        //after registration->profile is not redirecting to /welcome and not throwing the err
+        //after login->profile is redirecting to /registration
+
     }).catch((err) => {
         console.log("trouble with inserting profile data", err);
     });
 });
+app.get("/welcome", (req, res) => {
+    if (res.session.registeredId && req.session.allow) {
+        res.redirect("/thanks");
+    } else {
+        res.render("welcome", {
+            layout: "main",
+        });
+    }
+});
 app.post("/welcome", (req, res) => {
-    first = req.body["first"];
-    last = req.body["last"];
+    // first = req.body["first"];
+    // last = req.body["last"];
     signature = req.body["signature"];
-    if (first === empty || last === empty || signature === empty) {
-        console.log("Not logging the data");
+    userid = req.session.registeredId;
+    if (signature === empty) {
+        console.log("No signature");
         res.render("welcome", {
             layout: "main",
             err: "Please try again",
         });
     } else {
         //console.log("I'm here, first last", first, last);
-        db.addInfo(first, last, signature).then((result) => {
+        db.addInfo(signature, userid).then((result) => {
             signatureId = result.rows[0].id;
             req.session.signedId = signatureId;
             req.session.allow = true;
@@ -233,19 +240,19 @@ app.get("/signers", (req, res) => {
 });
 app.get("/signers/:city", (req, res) => {
     //hint hint, need to remember req.params
-    let ct = req.params.city;
+    let city = req.params.city;
     console.log("req.params.city", req.params.city)
-    db.getCity(ct).then((result) => {
+    db.getCity(city).then((result) => {
         let allFromThisCity = result.rows;
         res.render("signers", {
             layour: "main",
-            allFromThisCity,
+            allFromThisCity: allFromThisCity,
         });
     });
 });
 
 
-app.listen(8080, () => console.log("petition server is running..."));
+app.listen(process.env.PORT || 8080, () => console.log("petition server is running..."));
 
 ///////////////////////////////////////////////////////
 ////////////////////CLASS NOTES///////////////////////

@@ -1,13 +1,13 @@
 const spicedPg = require("spiced-pg");
-var db = spicedPg('postgres:postgres:postgres@localhost:5432/users');
+var db = spicedPg(process.env.DATABASE_URL || 'postgres:postgres:postgres@localhost:5432/users');
 
-module.exports.addInfo = (first, last, signature) => {
+module.exports.addInfo = (signature, userid) => {
     return db.query(`
-    INSERT INTO signatures (first, last, signature)
-    VALUES ($1, $2, $3) RETURNING id `, [first, last, signature]);
+    INSERT INTO signatures (signature, userid)
+    VALUES ($1, $2) RETURNING id `, [signature, userid]);
 };
 module.exports.getInfo = () => {
-    return db.query(`SELECT * FROM signatures`);
+    return db.query(`SELECT * FROM users`);
 };
 
 module.exports.getSignature = (id) => {
@@ -51,11 +51,16 @@ module.exports.getProfile = () => {
     ON users.id = signatures.user_id
      `);
 };
-module.exports.getCity = (ct) => {
+module.exports.getCity = (city) => {
     db.query(`SELECT * FROM users
     JOIN profiles
     ON users.id = profiles.user_id
     JOIN signatures
     ON users.id = signatures.user_id
-    WHERE LOWER(ct) = LOWER($1)`, [ct]);
+    WHERE LOWER(city) = LOWER($1)`, [city]);
 }
+
+// INSERT INTO profiles (age, city, url)
+// VALUES("", "", "") //need to work out how to get the values
+// ON CONFLICT(age, city, url)
+// DO UPDATE SET age = "", city = "", url="";

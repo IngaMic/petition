@@ -68,8 +68,16 @@ module.exports.getpersonalProfile = (userid) => {
     WHERE users.id = ($1)`, [userid]);
 };
 
+module.exports.deleteSignature = (userid) => {
+    return db.query(
+        `DELETE FROM signatures WHERE userid = ($1)`, [userid]);
+};
 
-// INSERT INTO profiles (age, city, url)
-// VALUES("", "", "") //need to work out how to get the values
-// ON CONFLICT(age, city, url)
-// DO UPDATE SET age = "", city = "", url="";
+module.exports.updateProfile = (userid) => {
+    // `INSERT INTO profiles (first, last, email, password, age, city, url)
+    // VALUES("", "", "") //need to work out how to get the values
+    // ON CONFLICT(first, last, email, password, age, city, url)
+    // DO UPDATE SET age = "", city = "", url=""`
+}
+
+

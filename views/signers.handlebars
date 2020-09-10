@@ -14,14 +14,16 @@
         ,{{age}}
         {{/if}}
         {{#if city}}
-        <a href="/signers/:{{city}}">{{city}}</a>
+        <a href="/signers/{{city}}">{{city}}</a>
         {{/if}}
     </li>
     {{/list}}
 </ul>
 {{!-- not sure how render this part : --}}
+{{#if allFromThisCity}}
 <ul>
     {{#allFromThisCity}}
     <li>{{first}} {{last}} </li>
     {{/allFromThisCity}}
 </ul>
+{{/if}}

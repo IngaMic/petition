@@ -10,6 +10,7 @@ const handlebars = require("express-handlebars");
 const cookieSession = require('cookie-session');
 const csurf = require('csurf');
 const { hash } = require("bcryptjs");
+const { request } = require("express");
 const { noLogin, requireSignature } = conditions;
 
 const hbSet = handlebars.create({
@@ -46,12 +47,16 @@ app.get("/", (req, res) => {
     res.redirect("/registration");
 });
 app.use((req, res, next) => {
-    if (req.url !== "/registration" && req.url !== "/login" && req.url !== "/profile" && req.url !== "/thanks" && req.url !== "/welcome" && req.url !== "/signers" && req.url !== "/signers/:city" && req.url !== "/edit") {
-        res.redirect("/registration");
-    } else {
-        next();
-    }
-});
+    console.log("req.url", req.url);
+    next();
+})
+// app.use((req, res, next) => {
+//     if (req.url !== "/registration" && req.url !== "/login" && req.url !== "/profile" && req.url !== "/thanks" && req.url !== "/welcome" && req.url !== "/signers" && req.url !== "/signers/:city" && req.url !== "/edit" && req.url !== "/delete") {
+//         res.redirect("/registration");
+//     } else {
+//         next();
+//     }
+// });
 var empty = "";
 var signatureId;
 var first;
@@ -101,12 +106,12 @@ app.post("/registration", noLogin, (req, res) => {
         };
     }).catch((err) => console.log("hash() didn't work", err));
 });
-app.get("/login", noLogin, (req, res) => { //noLogin
+app.get("/login", noLogin, (req, res) => {
     res.render("login", {
         layout: "main",
     });
 });
-app.post("/login", noLogin, (req, res) => { //noLogin
+app.post("/login", noLogin, (req, res) => {
     let logPassword = req.body.password;
     let logemail = req.body.email;
     db.getLogin(logemail).then((result) => {
@@ -118,10 +123,10 @@ app.post("/login", noLogin, (req, res) => { //noLogin
             bc.compare(logPassword, pass).then((info) => {
                 //console.log("info from compare", info);
                 if (info) {
-                    /////////////////////////////////////////////////////////
-                    ///////////////////////////////////////////////////////////
+                    /////////////////////////////////////////////////////////////
                     req.session.loged = true;
                     if (req.session.profiled) {
+                        res.redirect("/welcome");
                     } else {
                         res.redirect("/profile");
                     }
@@ -138,7 +143,7 @@ app.post("/login", noLogin, (req, res) => { //noLogin
                 err: "Please try again",
             });
         };
-    }).catch((err) => { console.log("err in getLogin", err) }); // sort err in getLogin TypeError: Cannot read property 'id' of undefined
+    }).catch((err) => { console.log("err in getLogin", err) });
 });
 app.get("/profile", (req, res) => {
     if (req.session.registeredId) {
@@ -151,12 +156,14 @@ app.post("/profile", (req, res) => {
     age = req.body["age"];
     city = req.body["city"];
     url = req.body["url"];
-    //need to be cautious with url, add http or https
-    if (url !== empty && !url.startsWith("http://") || !url.startsWith("https://")) {
-        url = "https://" + url;
-        console.log("url after if statement :", url);
+    if (url !== empty) {
+        if (!url.startsWith("http://") || !url.startsWith("https://")) {
+            url = "https://" + url;
+            console.log("url after if statement :", url);
+        } else {
+            return;
+        }
     }
-    //////////////////////////////////////////else? because generates all url = https://
     user_id = req.session.registeredId;
     //console.log("user_id post profile", user_id);
     db.addProfile(age || null, city || null, url || null, user_id).then(() => {
@@ -187,7 +194,6 @@ app.post("/welcome", (req, res) => {
             err: "Please try again",
         });
     } else {
-        //console.log("I'm here, first last", first, last);
         db.addInfo(signature, userid).then((result) => {
             signatureId = result.rows[0].id;
             req.session.signedId = signatureId;
@@ -234,23 +240,20 @@ app.get("/signers", (req, res) => {
 
 });
 app.get("/signers/:city", (req, res) => {
-    if (req.session.allow) {
-        //hint hint, need to remember req.params
-        let city = req.params.city;
-        //console.log("req.params.city", req.params.city) //logs right
-        ///////////////////////////////////////then is not working///////////////
-        db.getCity(city).then((result) => {
-            console.log(result);
-            let allFromThisCity = result.rows;
-            console.log("allFromThisCity :", allFromThisCity);
-            res.render("signers", {
-                layour: "main",
-                allFromThisCity,
-            }).catch((err) => console.log("err in getting City log :", err));
+    //hint hint, need to remember req.params
+    //console.log("req.params : ", req.params);
+    let city = req.params.city;
+    //console.log("req.params.city", req.params.city); //logs right //not anymore
+    ///////////////////////////////////////then it's not working///////////////
+    db.getCity(city).then((result) => {
+        console.log(result);
+        let allFromThisCity = result.rows;
+        console.log("allFromThisCity :", allFromThisCity);
+        res.render("signers", {
+            layour: "main",
+            allFromThisCity: allFromThisCity,
         });
-    } else {
-        res.redirect("/welcome");
-    }
+    }).catch((err) => console.log("err in getting City log :", err));
 });
 
 app.get("/edit", (req, res) => {
@@ -275,12 +278,17 @@ app.post("/edit", (req, res) => {
     age = req.body["age"];
     city = req.body["city"];
     url = req.body["url"];
+    ///////////////////////////UPDATE PROFILE///////////
     // //need to be cautious with url, add http or https
-    // if (url !== empty && !url.startsWith("http://") || !url.startsWith("https://")) {
+    // if (url !== empty) {
+    // if (!url.startsWith("http://") || !url.startsWith("https://")) {
     //     url = "https://" + url;
     //     console.log("url after if statement :", url);
+    // } else {
+    //     return;
     // }
-    // //////////////////////////////////////////else? because generates all url = https://
+    //}
+    // //////////////////////////////////////////
     // user_id = req.session.registeredId;
     // console.log("user_id post edit page", user_id);
     // db.editProfile(parameters here).then(() => {
@@ -288,6 +296,41 @@ app.post("/edit", (req, res) => {
     // }).catch((err) => {
     //     console.log("trouble with inserting profile data", err);
     // });
+});
+
+app.get("/delete", (req, res) => {
+    if (req.session.registeredId) {
+        userid = req.session.registeredId;
+        res.render("delete", {
+            layour: "main"
+        });
+    }
+});
+app.post("/delete", (req, res) => {
+
+    userId = req.session.registeredId;
+    console.log("registeredId", userId);
+    let logPassword = req.body.password;
+    db.getpersonalProfile(userId).then((result) => {
+        let pass = result.rows[0].password;
+        bc.compare(logPassword, pass).then((info) => {
+            console.log("info from compare in deleting sig", info);
+            if (info) {
+                db.deleteSignature(userid).then(() => {
+                    delete req.session.signatureId;
+                    delete req.session.signedId;
+                    delete req.session.allow;
+                    res.redirect("/welcome");
+                }).catch((err) => { console.log("err in getting personalProfile", err) });
+            } else {
+                res.render("delete", {
+                    layout: "main",
+                    err: "Please try again",
+                });
+            }
+        }).catch((err) => { console.log("err in compare", err) });
+
+    }).catch((err) => console.log("err in getting personalProfile", err));
 });
 
 app.listen(process.env.PORT || 8080, () => console.log("petition server is running..."));

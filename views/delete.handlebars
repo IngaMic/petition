@@ -1,0 +1,16 @@
+<div class="form">
+    {{#if err}}
+    <h3 class="msg">Please try again! 🚨</h3>
+    {{else}}
+    <p>We are sorry to see you go!</p>
+    {{/if}}
+    <form method="POST" action="#">
+        <div>
+            <input type="hidden" name="_csrf" value="{{csrfToken}}">
+            <h4>Are you sure you want to delete your vote?</h4>
+            <p>Please confirm with typing in your password</p>
+            <input type="password" name="password" value="" placeholder="Password" autocomplete="off">
+        </div>
+        <button id="submit" name="submit" value="submit"> Submit </submit>
+    </form>
+</div>

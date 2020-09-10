@@ -246,7 +246,7 @@ app.get("/signers/:city", (req, res) => {
             res.render("signers", {
                 layour: "main",
                 allFromThisCity,
-            });
+            }).catch((err) => console.log("err in getting City log :", err));
         });
     } else {
         res.redirect("/welcome");

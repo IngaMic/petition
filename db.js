@@ -52,13 +52,22 @@ module.exports.getProfile = () => {
      `);
 };
 module.exports.getCity = (city) => {
+    db.query(`SELECT first, last FROM users
+    JOIN profiles
+    ON users.id = profiles.user_id
+    JOIN signatures
+    ON users.id = signatures.userid
+    WHERE LOWER(city) = LOWER($1) RETURNING id`, [city]);
+};
+module.exports.getpersonalProfile = (userid) => {
     db.query(`SELECT * FROM users
     JOIN profiles
     ON users.id = profiles.user_id
     JOIN signatures
     ON users.id = signatures.userid
-    WHERE LOWER(city) = LOWER($1)`, [city]);
-}
+    WHERE users.id = ($1) RETURNING id`, [userid]);
+};
+
 
 // INSERT INTO profiles (age, city, url)
 // VALUES("", "", "") //need to work out how to get the values

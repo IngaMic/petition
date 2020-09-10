@@ -1,13 +1,15 @@
 <form method="POST" action="#">
+    {{#personalProfile}}
     <input type="hidden" name="_csrf" value="{{csrfToken}}">
-    <input class="first" type="text" name="first" value="{{first}}" placeholder="First Name" autocomplete="off">
-    <input class="last" type="text" name="last" value="{{last}}" placeholder="Last Name" autocomplete="off">
-    <input type="email" name="email" value="{{email}}" placeholder="Email" autocomplete="off">
+    <input class="first" type="text" name="first" value="{{first}}" placeholder="{{first}}" autocomplete="off">
+    <input class="last" type="text" name="last" value="{{last}}" placeholder="{{last}}" autocomplete="off">
+    <input type="email" name="email" value="{{email}}" placeholder="{{email}}" autocomplete="off">
     {{!-- password is a special case: // not empty!! --}}
-    <input type="password" name="password" value="" placeholder="Password" autocomplete="off">
+    <input type="password" name="password" value="{{password}}" placeholder=autocomplete="off">
     {{!-- these are not placeholders: --}}
-    <input type="text" name="age" value="{{age}}" placeholder="" autocomplete="off">
-    <input type="text" name="city" value="{{city}}" placeholder="" autocomplete="off">
-    <input type="text" name="url" value="{{url}}" placeholder="" autocomplete="off">
+    <input type="text" name="age" value="{{age}}" placeholder="{{age}}">
+    <input type="text" name="city" value="{{city}}" placeholder="{{city}}">
+    <input type="text" name="url" value="{{url}}" placeholder="{{url}}">
+    {{/personalProfile}}
     <button id="submit" name="submit" value="submit"> Update </submit>
 </form>

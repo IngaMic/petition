@@ -21,13 +21,13 @@ module.exports.notSigned = (req, res, next) => {
     }
 };
 
-// module.exports.noSignature = (req, res, next) => {
-//     if (!req.session.allow) {
-//         res.redirect("/welcome");
-//     } else {
-//         next();
-//     }
-// };
+module.exports.signatureOn = (req, res, next) => {
+    if (!req.session.allow) {
+        res.redirect("/welcome");
+    } else {
+        next();
+    }
+};
 
 
 // const noLogin = (req, res, next) => {

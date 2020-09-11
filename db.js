@@ -21,7 +21,6 @@ module.exports.getList = () => {
     );
 };
 
-
 module.exports.registerInfo = (first, last, email, password) => {
     return db.query(`
     INSERT INTO users (first, last, email, password)
@@ -73,16 +72,23 @@ module.exports.deleteSignature = (userid) => {
         `DELETE FROM signatures WHERE userid = ($1)`, [userid]);
 };
 
-module.exports.updateProfile = (first, last, email, password, age, city, url, userid) => {
-    return db.query(`INSERT INTO profiles (first, last, email, password, age, city, url)
-    VALUES($1, $2, $3, $4, $5, $6, $7)
-    ON CONFLICT (email)
-    DO UPDATE SET first, last, email, password, age, city, url` , [first, last, email, password, age || null, city || null, url || null, userid]);
+module.exports.updateProfile = (age, city, url, user_id) => {
+    return db.query(`INSERT INTO profiles (age, city, url, user_id)
+    VALUES($1, $2, $3, $4)
+    ON CONFLICT (user_id)
+    DO UPDATE SET age = ($1), city = ($2), url = ($3), user_id = ($4) ` , [age || null, city || null, url || null, user_id]);
 };
 
-module.exports.updateProfileNoPas = (first, last, email, age, city, url, userid) => {
-    return db.query(`INSERT INTO profiles (first, last, email, age, city, url)
-    VALUES($1, $2, $3, $4, $5, $6)
-    ON CONFLICT (email)
-    DO UPDATE SET first, last, email, age, city, url` , [first, last, email, age || null, city || null, url || null, userid]);
+module.exports.updateTable = (first, last, email, password, userid) => {
+    return db.query(`UPDATE users
+    SET first = ($1), last = ($2), email = ($3), password = ($4)
+    WHERE id = ($5)
+    ` , [first, last, email, password, userid]);
+};
+
+module.exports.updateTableNoPas = (first, last, email, userid) => {
+    return db.query(`UPDATE users 
+    SET first = ($1), last = ($2), email = ($3)
+    WHERE id = ($4)
+    ` , [first, last, email, userid]);
 };

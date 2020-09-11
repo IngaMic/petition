@@ -75,9 +75,14 @@ module.exports.deleteSignature = (userid) => {
 
 module.exports.updateProfile = (first, last, email, password, age, city, url, userid) => {
     return db.query(`INSERT INTO profiles (first, last, email, password, age, city, url)
-    VALUES($1, $2, $3, $4, $5, $6, $7) RETURNING id
-    ON CONFLICT(first, last, email, password, age, city, url)
-    DO UPDATE SET first, last, email, password, age, city, url` , [first, last, email, password, age, city, url, userid]);
-}
+    VALUES($1, $2, $3, $4, $5, $6, $7)
+    ON CONFLICT (email)
+    DO UPDATE SET first, last, email, password, age, city, url` , [first, last, email, password, age || null, city || null, url || null, userid]);
+};
 
-
+module.exports.updateProfileNoPas = (first, last, email, age, city, url, userid) => {
+    return db.query(`INSERT INTO profiles (first, last, email, age, city, url)
+    VALUES($1, $2, $3, $4, $5, $6)
+    ON CONFLICT (email)
+    DO UPDATE SET first, last, email, age, city, url` , [first, last, email, age || null, city || null, url || null, userid]);
+};

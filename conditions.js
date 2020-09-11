@@ -5,6 +5,21 @@ module.exports.noLogin = (req, res, next) => {
         next();
     }
 };
+module.exports.notProfiled = (req, res, next) => {
+    if (req.session.profiled) {
+        res.redirect("/welcome");
+    } else {
+        next();
+    }
+};
+
+module.exports.notSigned = (req, res, next) => {
+    if (req.session.allow) {
+        res.redirect("/thanks");
+    } else {
+        next();
+    }
+};
 
 // module.exports.noSignature = (req, res, next) => {
 //     if (!req.session.allow) {
@@ -14,13 +29,7 @@ module.exports.noLogin = (req, res, next) => {
 //     }
 // };
 
-// module.exports.isSignature = (req, res, next) => {
-//     if (req.session.allow) {
- //       res.redirect("/thanks");
-//     } else {
-//         next();
-//     }
-// };
+
 // const noLogin = (req, res, next) => {
 //     if(req.session.userId) {
 //         res.redirect("/welcome");

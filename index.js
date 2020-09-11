@@ -11,7 +11,7 @@ const cookieSession = require('cookie-session');
 const csurf = require('csurf');
 const { hash } = require("bcryptjs");
 const { request } = require("express");
-const { noLogin, requireSignature } = conditions;
+const { noLogin, notProfiled, notSigned } = conditions;
 
 const hbSet = handlebars.create({
     helpers: {
@@ -74,7 +74,6 @@ app.get("/registration", noLogin, (req, res) => {
         layout: "main",
     });
 });
-
 app.post("/registration", noLogin, (req, res) => {
     first = req.body["first"];
     last = req.body["last"];
@@ -85,14 +84,22 @@ app.post("/registration", noLogin, (req, res) => {
         req.body.password = result;
         password = req.body.password
         //console.log("password", password);
+        // db.getLogin(email).then((result) => {
+        //     if (result) {
+        //         //console.log("result", result);/////////////if somebody already registered with this email
+        //         res.render("registration", {
+        //             layout: "main",
+        //             err: "Please try again",
+        //         });
+        //     } else {
         if (first === empty || last === empty || email === empty || password === empty) {
             console.log("Not logging the registration data / empty");
             res.render("registration", {
                 layout: "main",
                 err: "Please try again",
             });
-        } else {
-            //console.log("I'm here, first last email", first, last, email, password);
+        }
+        else {
             db.registerInfo(first, last, email, password).then((result) => {
                 var userid = result.rows[0].id;
                 console.log("userid", userid);
@@ -104,8 +111,11 @@ app.post("/registration", noLogin, (req, res) => {
                 console.log("trouble with inserting registration data", err); //getting error: relation "usersdata" does not exist
             });
         };
+        //};
+        //}).catch((err) => { console.log("err in checking if email already registered", err) });
     }).catch((err) => console.log("hash() didn't work", err));
 });
+
 app.get("/login", noLogin, (req, res) => {
     res.render("login", {
         layout: "main",
@@ -123,13 +133,7 @@ app.post("/login", noLogin, (req, res) => {
             bc.compare(logPassword, pass).then((info) => {
                 //console.log("info from compare", info);
                 if (info) {
-                    /////////////////////////////////////////////////////////////
-                    req.session.loged = true;
-                    if (req.session.profiled) {
-                        res.redirect("/welcome");
-                    } else {
-                        res.redirect("/profile");
-                    }
+                    res.redirect("/welcome");
                 } else {
                     res.render("login", {
                         layout: "main",
@@ -145,14 +149,16 @@ app.post("/login", noLogin, (req, res) => {
         };
     }).catch((err) => { console.log("err in getLogin", err) });
 });
-app.get("/profile", (req, res) => {
+
+app.get("/profile", notProfiled, (req, res) => {
     if (req.session.registeredId) {
         res.render("profile", {
             layout: "main",
         });
     }
 });
-app.post("/profile", (req, res) => {
+app.post("/profile", notProfiled, (req, res) => {
+    req.session.profiled = true;//////////////check if it's ok
     age = req.body["age"];
     city = req.body["city"];
     url = req.body["url"];
@@ -167,23 +173,19 @@ app.post("/profile", (req, res) => {
     user_id = req.session.registeredId;
     //console.log("user_id post profile", user_id);
     db.addProfile(age || null, city || null, url || null, user_id).then(() => {
-        req.session.profiled = true;////////////////////////////////check if it's ok
+
         res.redirect("/welcome");
     }).catch((err) => {
         console.log("trouble with inserting profile data", err);
     });
 });
 
-app.get("/welcome", (req, res) => {
-    if (req.session.allow) {
-        res.redirect("/thanks");
-    } else {
-        res.render("welcome", {
-            layout: "main",
-        });
-    }
+app.get("/welcome", notSigned, (req, res) => {
+    res.render("welcome", {
+        layout: "main",
+    });
 });
-app.post("/welcome", (req, res) => {
+app.post("/welcome", notSigned, (req, res) => {
     signature = req.body["signature"];
     userid = req.session.registeredId;
     //console.log(" signature", signature);
@@ -243,8 +245,7 @@ app.get("/signers/:city", (req, res) => {
     //hint hint, need to remember req.params
     //console.log("req.params : ", req.params);
     let city = req.params.city;
-    //console.log("req.params.city", req.params.city); //logs right //not anymore
-    ///////////////////////////////////////then it's not working///////////////
+    //console.log("req.params.city", req.params.city); //logs right
     db.getCity(city).then((result) => {
         console.log(result);
         let allFromThisCity = result.rows;
@@ -261,8 +262,9 @@ app.get("/edit", (req, res) => {
         userid = req.session.registeredId;
         console.log("that's my userId in edit GET :", userid);
         db.getpersonalProfile(userid).then((info) => {
-            let personalProfile = info.rows;
-            //console.log("my personalProfile here:", personalProfile);
+
+            let personalProfile = info.rows[0];
+            console.log("my personalProfile here:", personalProfile);
             res.render("edit", {
                 layout: "main",
                 personalProfile,
@@ -271,6 +273,7 @@ app.get("/edit", (req, res) => {
     }
 });
 app.post("/edit", (req, res) => {
+    userid = req.session.registeredId;
     first = req.body["first"];
     last = req.body["last"];
     email = req.body["email"];
@@ -278,7 +281,6 @@ app.post("/edit", (req, res) => {
     age = req.body["age"];
     city = req.body["city"];
     url = req.body["url"];
-    //need to be cautious with url again, add http or https
     if (url !== empty) {
         if (!url.startsWith("http://") || !url.startsWith("https://")) {
             url = "https://" + url;
@@ -287,17 +289,30 @@ app.post("/edit", (req, res) => {
             return;
         }
     }
-    ///////////////////////////UPDATE PROFILE///////////
-    userid = req.session.registeredId;
-    db.updateProfile(first, last, email, password, age || null, city || null, url || null, userid).then(() => {
-        req.session.profiled = true;////////////////////////////////check if it's ok
-        res.redirect("/welcome");
-    }).catch((err) => {
-        console.log("trouble with inserting profile data while updating POST edit", err);
-    });
-    /////////////////////////////////////////////
-
+    //////////////////////////UPDATE PROFILE///////////
+    /////////////two conditions : if password not updated , else if updated////////////////////////////////
+    if (password === empty) {
+        db.updateProfileNoPas(first, last, email, age || null, city || null, url || null, userid).then(() => {
+            req.session.profiled = true;
+            res.redirect("/welcome");
+        }).catch((err) => {
+            console.log("trouble with updateProfileNoPas while updating POST /edit", err);
+        });
+    } else {
+        bc.hash(password).then((result) => {
+            req.body.password = result;
+            password = req.body.password
+            //console.log("password", password);
+            db.updateProfile(first, last, email, password, age || null, city || null, url || null, userid).then(() => {
+                req.session.profiled = true;////////////////////////////////check if it's ok
+                res.redirect("/welcome");
+            }).catch((err) => {
+                console.log("trouble with inserting profile data while updating POST /edit", err);
+            });
+        }).catch((err) => console.log("hash() didn't work", err));
+    }
 });
+
 app.get("/delete", (req, res) => {
     if (req.session.registeredId) {
         userid = req.session.registeredId;
@@ -328,31 +343,10 @@ app.post("/delete", (req, res) => {
                 });
             }
         }).catch((err) => { console.log("err in compare", err) });
-
     }).catch((err) => console.log("err in getting personalProfile", err));
 });
 
 app.listen(process.env.PORT || 8080, () => console.log("petition server is running..."));
-
-///////////////////////////////////////////////////////
-////////////////////CLASS NOTES///////////////////////
-// app.get("cities", (req, res) => {
-//     db.getCities().then((results) => {
-//         console.log("results", results);
-//     }).catch(err => {
-//         console.log("err in getCities", err);
-//     })
-// });
-// app.post("/add-city", (req, res) => {
-//     db.addCity("Quito", 1000, "Equador").then(() => {
-//         console.log("yay that worked");
-//     }).catch((err) => {
-//         console.log("err in addCity", err);
-//     })
-// })
-///////////////////////////////////////////////////////////
-
-
 
 
 

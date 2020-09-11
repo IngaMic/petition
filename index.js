@@ -271,6 +271,7 @@ app.get("/edit", (req, res) => {
     }
 });
 app.post("/edit", (req, res) => {
+    userid = req.session.registeredId;
     first = req.body["first"];
     last = req.body["last"];
     email = req.body["email"];
@@ -287,16 +288,19 @@ app.post("/edit", (req, res) => {
             return;
         }
     }
+    bc.hash(password).then((result) => {
+        req.body.password = result;
+        password = req.body.password
+        //console.log("password", password);
+        db.updateProfile(first, last, email, password, age || null, city || null, url || null, userid).then(() => {
+            req.session.profiled = true;////////////////////////////////check if it's ok
+            res.redirect("/welcome");
+        }).catch((err) => {
+            console.log("trouble with inserting profile data while updating POST /edit", err);
+        });
+    }).catch((err) => console.log("hash() didn't work", err));
     ///////////////////////////UPDATE PROFILE///////////
-    userid = req.session.registeredId;
-    db.updateProfile(first, last, email, password, age || null, city || null, url || null, userid).then(() => {
-        req.session.profiled = true;////////////////////////////////check if it's ok
-        res.redirect("/welcome");
-    }).catch((err) => {
-        console.log("trouble with inserting profile data while updating POST edit", err);
-    });
     /////////////////////////////////////////////
-
 });
 app.get("/delete", (req, res) => {
     if (req.session.registeredId) {

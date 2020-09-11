@@ -40,4 +40,6 @@ canvas.addEventListener("mousedown", (e) => {
 canvas.addEventListener("mouseout", () => {
     signing = false;
 });
-
+canvas.addEventListener("mouseleave", () => {
+    signing = false;
+});

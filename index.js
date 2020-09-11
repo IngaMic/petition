@@ -293,6 +293,7 @@ app.post("/edit", (req, res) => {
             });
         }).catch((err) => {
             console.log("trouble with updateTableNoPas while updating POST /edit", err);
+
         });
     } else {
         console.log("block 2");

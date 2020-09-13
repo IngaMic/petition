@@ -187,6 +187,7 @@ app.post("/profile", notProfiled, (req, res) => {
 });
 
 app.get("/welcome", notSigned, (req, res) => {
+    userid = req.session.registeredId;
     db.getLoginSignature(userid).then((result) => {
         //console.log("result of getSignature in thanks", result);
         let usersSignature = result.rows[0].signature;
@@ -239,8 +240,9 @@ app.get("/thanks", (req, res) => {
     //////////////////////////////working on this
 
     db.getSignature(signatureId).then((result) => {
-        console.log("result of getSignature", result);
+        //console.log("result of getSignature", result);
         let usersSignature = result.rows[0].signature;
+        //console.log("usersSignature", usersSignature);
         db.getProfile().then((info) => {
             //the amount will be the number of table-rows
             let amount = info.rows.length;

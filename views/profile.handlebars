@@ -1,9 +1,18 @@
-<form method="POST" action="#">
-    <div class="form">
+<div class="page">
+    <img class="pic2" src="/pic2.jpg" alt="background picture">
+    <div class="in">
+        <div class="form">
+            <form method="POST" action="#">
+                <div class="form">
+                    <input type="hidden" name="_csrf" value="{{csrfToken}}">
+                    <input class="age" type="text" name="age" value="" placeholder="Age" autocomplete="off">
+                    <input class="city" type="text" name="city" value="" placeholder="City" autocomplete="off">
+                    <input type="text" name="url" value="" placeholder="URL" autocomplete="off">
 
-        <input type="hidden" name="_csrf" value="{{csrfToken}}">
-        <input class="age" type="text" name="age" value="" placeholder="Age" autocomplete="off">
-        <input class="city" type="text" name="city" value="" placeholder="Last Name" autocomplete="off">
-        <input type="text" name="url" value="" placeholder="URL" autocomplete="off">
+                </div>
+                <div class="button">
+                    <button id="submit" name="submit" value="submit"> Submit </button>
+                </div>
+        </div>
     </div>
-    <button id="submit" name="submit" value="submit"> Submit </submit>
+</div>

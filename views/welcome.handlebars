@@ -1,22 +1,41 @@
-<div class="header">
-    <h1>Petition</h1>
-    <p>About something something</p>
-</div>
-<div class="form">
-    {{#if err}}
-    <h3 class="msg">Please try again! 🚨</h3>
-    {{else}}
-    <h4 class="msg">Join us!</h4>
-    {{/if}}
+<div class="page">
+    <img class="pic3" src="/pic3.jpg" alt="background picture">
+    <div class="in">
+        <div class="header">
+            <h1>Petition</h1>
+            <h2>Sign it your way!</h2>
+            <p>Did you know?
 
-    <form method="POST" action="#">
-        <div>
-            {{!-- figure out the < error --}}
-
-            <input type="hidden" name="_csrf" value="{{csrfToken}}">
-            <input type="hidden" id="hidden" value="" name="signature">
-            <canvas name="signature" id="canvas" height="230" width="380" style="border: 2px solid black"></canvas>
+                Nearly 1 percent of passport applications in Germany last year were rejected for the reason that
+                signatures
+                did not meet the criteria for standard signatures. </br>
+                At <strong>freeeyoursignatures</strong> we believe this simply cannot be allowed to continue.
+                </br>
+                The aim of this campaign is simple - we want people to be allowed to sign their passports and other
+                legal documents any way they choose. Would you like your signature to be an adorable kitty, a dinosaur
+                or a dragon,
+                or a little caricature of you wearing your favourite glasses? You got it!
+            </p>
         </div>
-        <button id="submit" name="submit" value="submit"> Submit </submit>
-    </form>
+        <div class="form">
+            {{#if err}}
+            <h3 class="msg">Please try again! 🚨</h3>
+            {{else}}
+            <h4 class="msg">Join us by signing below - the way <strong>YOU</strong> want to!</h4>
+
+            {{/if}}
+
+            <form method="POST" action="#">
+                <div>
+                    {{!-- figure out the < error --}}
+
+                    <input type="hidden" name="_csrf" value="{{csrfToken}}">
+                    <input type="hidden" id="hidden" value="" name="signature">
+                    <canvas name="signature" id="canvas" height="230" width="380"
+                        style="border: 2px solid black"></canvas>
+                </div>
+                <button id="submit" name="submit" value="submit"> Submit </button>
+            </form>
+        </div>
+    </div>
 </div>

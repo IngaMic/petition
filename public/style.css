@@ -1,8 +1,63 @@
 * {
     margin: 0;
     box-sizing: border-box;
+   font-family: 'Roboto', sans-serif;
+   background-image: "https://www.pexels.com/photo/white-short-coated-small-dog-4588441/";
+}
+.page {
+    margin: 0;
+    height: 100%;
+    width: 100%;
+    position: relative;
+}
+h1 {
+   font-family: 'Shadows Into Light', cursive;
+    margin: 10px;
+    margin-top: 20px;
+    font-size: 45px;
+}
+h2 {
+    margin: 10px;
+}
+h3 {
+    padding: 10px;
+    text-decoration: underline;
+    margin-bottom: 10px;
+}
+button {
+    font-family: 'Fjalla One', sans-serif;
+    padding: 5px;
+    border-radius: 10px;
+    background-color: #F9F7F0;
+    margin: 4px;
+    margin-bottom: 15px;
+    margin-top: 10px;
+    font-weight: 600;
+    font-size: 15px;
+}
+input {
+     font-size: 13px;
+     padding: 2px;
+     border-radius: 5px;
+     margin: 2px;
+}
+a, li {
+    list-style-type: none;
+    text-decoration: none;
+    font-weight: 600;
+    margin: 5px;
+    color: rgba(9, 31, 20, 0.788);
+}
+p {
+    padding-left: 40px;
+    padding-right: 40px;
+    text-decoration: none;
+    font-weight: 600;
+    margin: 5px;
+    color: rgba(9, 31, 20, 0.904);
 }
 #canvas {
+    background-color: rgb(247, 246, 240);
     border: 2px solid black;
 }
 .thanks-pic {
@@ -10,19 +65,50 @@
  width: auto;
  border: 3px solid goldenrod;
 }
-.header {
-    position: relative;
-    width: 100%;
+.list1 {
+    background-color: #F8F7F4;
+    margin-top: 20px;
+    padding-top: 10px;
+    position: absolute;
+    width: 60%;
+    left: 20%;
     text-align: center;
+    border-radius: 15px;
+} 
+.in {
+    background-color: rgba(252, 252, 8, 0.959);
+    /* border: 3px solid black; */
+    margin-top: 80px;
+    position: absolute;
+    width: 60%;
+    left: 20%;
+    text-align: center;
+    border-radius: 15px;
+    box-shadow: 5px 10px 10px rgba(0, 0, 0, 0.726);
+}
+.number {
+    font-size: 30px;
+    padding: 5px;
+}
+.signers {
+     font-size: 25px;
 }
 .form {
-    position: relative;
-    width: 100%;
-    text-align: center;
+    padding-top: 15px;
 }
 footer {
     position: fixed;
     bottom: 10px;
     width: 100%;
     text-align: center;
+    font-size: 12px;
+}
+.pic1, .pic2, .pic3, .pic4, .pic5, .pic6 {
+    margin: 0;
+  width: 100%;
+    height: auto;
+    position: fixed;
+}
+.msg {
+    padding-bottom: 15px;
 }

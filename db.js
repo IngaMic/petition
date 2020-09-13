@@ -66,6 +66,12 @@ module.exports.getpersonalProfile = (userid) => {
     ON users.id = signatures.userid
     WHERE users.id = ($1)`, [userid]);
 };
+module.exports.getLoginSignature = (userid) => {
+    return db.query(`SELECT * FROM users
+    JOIN signatures
+    ON users.id = signatures.userid
+    WHERE users.id = ($1)`, [userid]);
+};
 
 module.exports.deleteSignature = (userid) => {
     return db.query(

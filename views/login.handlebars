@@ -1,20 +1,24 @@
-<div class="header">
-    <h1>Petition</h1>
-    <p>About something something</p>
-</div>
-<div class="form">
-    {{#if err}}
-    <h3 class="msg">Please try again! 🚨</h3>
-    {{else}}
-    <a href="/registration" class="msg">Dont have an account yet? Please register</a>
-    {{/if}}
-
-    <form method="POST" action="#">
-        <div>
-            <input type="hidden" name="_csrf" value="{{csrfToken}}">
-            <input type="email" name="email" value="" placeholder="Email" autocomplete="off">
-            <input type="password" name="password" value="" placeholder="Password" autocomplete="off">
+<div class="page">
+    <img class="pic4" src="/pic4.jpg" alt="background picture">
+    <div class="in">
+        <div class="header">
+            <h1>Sign it your way!</h1>
         </div>
-        <button id="submit" name="submit" value="submit"> Login </submit>
-    </form>
+        <div class="form1">
+            {{#if err}}
+            <h3 class="msg">Please try again! 🚨</h3>
+            {{else}}
+            <h3><a href="/registration" class="msg">Dont have an account yet? Join us! </a></h3>
+            {{/if}}
+
+            <form method="POST" action="#">
+                <div>
+                    <input type="hidden" name="_csrf" value="{{csrfToken}}">
+                    <input type="email" name="email" value="" placeholder="Email" autocomplete="off">
+                    <input type="password" name="password" value="" placeholder="Password" autocomplete="off">
+                </div>
+                <button id="submit" name="submit" value="submit"> Login </button>
+            </form>
+        </div>
+    </div>
 </div>

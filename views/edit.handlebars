@@ -1,26 +1,40 @@
-<form class="form" method="POST" action="#">
+<div class="page">
+        <img class="pic2" src="/pic5.jpg" alt="background picture">
+        <div class="in">
+                <form class="form" method="POST" action="#">
+                        <input type="hidden" name="_csrf" value="{{csrfToken}}">
+                        </br>
+                        <p> Name </p>
+                        <input class="first" type="text" name="first" value="{{personalProfile.first}}"
+                                placeholder="{{personalProfile.first}}" autocomplete="off">
+                        </br>
+                        <p>Surname </p>
+                        <input class="last" type="text" name="last" value="{{personalProfile.last}}"
+                                placeholder="{{personalProfile.last}}" autocomplete="off">
+                        </br>
+                        <p> Email </p>
+                        <input type="email" name="email" value="{{personalProfile.email}}"
+                                placeholder="{{personalProfile.email}}" autocomplete="off">
+                        </br>
+                        {{!-- password is a special case: // not empty!! --}}
+                        <p>Password </p>
+                        <input type="password" name="password" placeholder="" autocomplete="off">
+                        </br>
+                        {{!-- these are not placeholders: --}}
+                        <p> Age </p>
+                        <input type="text" name="age" value="{{personalProfile.age}}"
+                                placeholder="{{personalProfile.age}}">
+                        </br>
+                        <p> City </p>
+                        <input type="text" name="city" value="{{personalProfile.city}}"
+                                placeholder="{{personalProfile.city}}">
+                        </br>
+                        <p> Url </p>
+                        <input type="text" name="url" value="{{personalProfile.url}}"
+                                placeholder="{{personalProfile.url}}">
+                        </br>
 
-    <input type="hidden" name="_csrf" value="{{csrfToken}}">
-    </br>
-    <input class="first" type="text" name="first" value="{{personalProfile.first}}"
-        placeholder="{{personalProfile.first}}" autocomplete="off">
-    </br>
-    <input class="last" type="text" name="last" value="{{personalProfile.last}}" placeholder="{{personalProfile.last}}"
-        autocomplete="off">
-    </br>
-    <input type="email" name="email" value="{{personalProfile.email}}" placeholder="{{personalProfile.email}}"
-        autocomplete="off">
-    </br>
-    {{!-- password is a special case: // not empty!! --}}
-    <input type="password" name="password" placeholder="" autocomplete="off">
-    </br>
-    {{!-- these are not placeholders: --}}
-    <input type="text" name="age" value="{{personalProfile.age}}" placeholder="{{personalProfile.age}}">
-    </br>
-    <input type="text" name="city" value="{{personalProfile.city}}" placeholder="{{personalProfile.city}}">
-    </br>
-    <input type="text" name="url" value="{{personalProfile.url}}" placeholder="{{personalProfile.url}}">
-    </br>
-
-    <button id="submit" name="submit" value="submit"> Update </submit>
-</form>
+                        <button id="submit" name="submit" value="submit"> Update </button>
+                </form>
+        </div>
+</div>

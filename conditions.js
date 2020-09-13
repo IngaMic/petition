@@ -14,7 +14,7 @@ module.exports.notProfiled = (req, res, next) => {
 };
 
 module.exports.notSigned = (req, res, next) => {
-    if (req.session.allow) {
+    if (req.session.allow || req.session.signedId) {
         res.redirect("/thanks");
     } else {
         next();
@@ -28,12 +28,3 @@ module.exports.signatureOn = (req, res, next) => {
         next();
     }
 };
-
-
-// const noLogin = (req, res, next) => {
-//     if(req.session.userId) {
-//         res.redirect("/welcome");
-//     }else {
-//         next();
-//     }
-// };

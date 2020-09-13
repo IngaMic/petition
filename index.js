@@ -134,7 +134,7 @@ app.post("/login", noLogin, (req, res) => {
             bc.compare(logPassword, pass).then((info) => {
                 //console.log("info from compare", info);
                 if (info) {
-                    res.redirect("/welcome");
+                    res.redirect("/thanks");
                 } else {
                     res.render("login", {
                         layout: "main",
@@ -148,7 +148,13 @@ app.post("/login", noLogin, (req, res) => {
                 err: "Please try again",
             });
         };
-    }).catch((err) => { console.log("err in getLogin", err) });
+    }).catch((err) => {
+        console.log("err in getLogin", err);
+        res.render("login", {
+            layout: "main",
+            err: "Please try again",
+        });
+    });
 });
 
 app.get("/profile", notProfiled, (req, res) => {
@@ -181,8 +187,28 @@ app.post("/profile", notProfiled, (req, res) => {
 });
 
 app.get("/welcome", notSigned, (req, res) => {
-    res.render("welcome", {
-        layout: "main",
+    db.getLoginSignature(userid).then((result) => {
+        //console.log("result of getSignature in thanks", result);
+        let usersSignature = result.rows[0].signature;
+        db.getProfile().then((info) => {
+            //the amount will be the number of table-rows
+            let amount = info.rows.length;
+            //console.log("amount of users", amount);
+            res.render("thanks", {
+                usersSignature,
+                amount: amount,
+            });
+        }).catch((err) => {
+            console.log("err in getProfile GET /welcome", err);
+            res.render("welcome", {
+                layout: "main",
+            });
+        });
+    }).catch((err) => {
+        console.log("err in getLoginSignature GET /welcome", err);
+        res.render("welcome", {
+            layout: "main",
+        });
     });
 });
 app.post("/welcome", notSigned, (req, res) => {
@@ -208,18 +234,26 @@ app.post("/welcome", notSigned, (req, res) => {
 });
 
 app.get("/thanks", (req, res) => {
-    db.getSignature(req.session.signedId).then((result) => {
+    userid = req.session.registeredId;
+    ///////////////////////////////////////////////////
+    //////////////////////////////working on this
+
+    db.getSignature(signatureId).then((result) => {
+        console.log("result of getSignature", result);
+        let usersSignature = result.rows[0].signature;
         db.getProfile().then((info) => {
             //the amount will be the number of table-rows
             let amount = info.rows.length;
             //console.log("amount of users", amount);
-            let usersSignature = result.rows[0].signature;
             res.render("thanks", {
                 usersSignature,
                 amount: amount,
             });
-        });
-    }).catch((err) => { console.log("err in getSignature", err) });
+        }).catch((err) => { console.log("err in getProfile GET /thanks", err) });
+    }).catch((err) => {
+        console.log("err in getSignature GET /thanks", err);
+        res.redirect("/welcome");
+    });
 });
 
 app.get("/signers", (req, res) => {
@@ -242,7 +276,6 @@ app.get("/signers/:city", (req, res) => {
         let allFromThisCity = result.rows;
         //console.log("allFromThisCity :", allFromThisCity);
         res.render("signers", {
-            layour: "main",
             allFromThisCity: allFromThisCity,
         });
     }).catch((err) => console.log("err in getting City log :", err));
@@ -280,14 +313,12 @@ app.post("/edit", (req, res) => {
             return;
         }
     }
-    //////////////////////////UPDATE PROFILE///////////
-    /////////////two conditions : if password not updated , else if updated////////////////////////////////
     if (!password) {
         console.log("block 1");
         db.updateTableNoPas(first, last, email, userid).then(() => {
             db.updateProfile(age || null, city || null, url || null, userid).then(() => {
                 req.session.profiled = true;
-                res.redirect("/welcome");
+                res.redirect("/thanks");
             }).catch((err) => {
                 console.log("trouble with updateProfile while updating noPas POST /edit", err);
             });
@@ -304,7 +335,7 @@ app.post("/edit", (req, res) => {
             db.updateTableNoPas(first, last, email, userid).then(() => {
                 db.updateProfile(age || null, city || null, url || null, userid).then(() => {
                     req.session.profiled = true;
-                    res.redirect("/welcome");
+                    res.redirect("/thanks");
                 }).catch((err) => {
                     console.log("trouble with updateProfile while updating withPassword POST /edit", err);
                 });

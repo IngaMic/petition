@@ -7,7 +7,7 @@ user may see the list of all the signers together or divided by the city of orig
 The page also provides an option to delete ones signature.</br>
 </br>
 </br>
-(A short demo)[petition.gif]
+![short demo](petition.gif)
 </br>
 </br>
 ###Development</br>

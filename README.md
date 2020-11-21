@@ -7,10 +7,12 @@ user may see the list of all the signers together or divided by the city of orig
 The page also provides an option to delete ones signature.</br>
 </br>
 </br>
-![petition](https://user-images.githubusercontent.com/65318378/99879621-60323700-2c0e-11eb-88d7-50955ae7b3c8.gif)
+[![petition](https://user-images.githubusercontent.com/65318378/99879621-60323700-2c0e-11eb-88d7-50955ae7b3c8.gif)](https://youtu.be/fDZ8Rm1SP34)
 </br>
 </br>
-###Development</br>
+
+###Development
+</br>
 Javascript</br>
 Node.js</br>
 Express.js</br>
